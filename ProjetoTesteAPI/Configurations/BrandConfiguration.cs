@@ -17,7 +17,7 @@ namespace ProjetoTesteAPI.Configurations
                 .HasMaxLength(40)
                 .HasColumnName("nome");
 
-            builder.Property(x => x.CodeNumber)
+            builder.Property(x => x.Code)
                 .IsRequired()
                 .HasMaxLength(6)
                 .HasColumnName("codigo");
