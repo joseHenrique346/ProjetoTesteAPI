@@ -8,6 +8,8 @@ namespace ProjetoTesteAPI.Configurations
     {
         public void Configure(EntityTypeBuilder<Product> builder)
         {
+            builder.ToTable("produto");
+
             builder.HasKey(x => x.Id);
 
             builder.HasOne(x => x.Brand)

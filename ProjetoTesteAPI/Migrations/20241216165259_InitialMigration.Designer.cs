@@ -10,7 +10,7 @@ using ProjetoTesteAPI.Context;
 namespace ProjetoTesteAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241216133106_InitialMigration")]
+    [Migration("20241216165259_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -27,20 +27,27 @@ namespace ProjetoTesteAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    b.Property<int>("CodeNumber")
-                        .HasColumnType("int");
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("varchar(6)")
+                        .HasColumnName("codigo");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("descricao");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("nome");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Brands");
+                    b.ToTable("marca", (string)null);
                 });
 
             modelBuilder.Entity("ProjetoTesteAPI.Models.Product", b =>
@@ -52,16 +59,23 @@ namespace ProjetoTesteAPI.Migrations
                     b.Property<long>("BrandId")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("CodeNumber")
-                        .HasColumnType("int");
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("varchar(6)")
+                        .HasColumnName("codigo");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("descricao");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("nome");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(65,30)");
@@ -76,12 +90,17 @@ namespace ProjetoTesteAPI.Migrations
             modelBuilder.Entity("ProjetoTesteAPI.Models.Product", b =>
                 {
                     b.HasOne("ProjetoTesteAPI.Models.Brand", "Brand")
-                        .WithMany()
+                        .WithMany("ListProduct")
                         .HasForeignKey("BrandId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Brand");
+                });
+
+            modelBuilder.Entity("ProjetoTesteAPI.Models.Brand", b =>
+                {
+                    b.Navigation("ListProduct");
                 });
 #pragma warning restore 612, 618
         }
