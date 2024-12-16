@@ -3,9 +3,10 @@ using ProjetoTesteAPI.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
+string mySqlConnection = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
-           options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-                            ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
+    options.UseMySql(mySqlConnection, ServerVersion.AutoDetect(mySqlConnection)));
+
 // Add services to the container.
 
 builder.Services.AddControllers();
