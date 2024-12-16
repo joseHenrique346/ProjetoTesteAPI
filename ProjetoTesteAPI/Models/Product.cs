@@ -11,6 +11,7 @@ namespace ProjetoTesteAPI.Models
         public string Description { get; set; }
         public long BrandId { get; set; }
         public decimal Price { get; set; }
+        public long Stock { get; set; }
 
         public virtual Brand Brand { get; set; }
     }

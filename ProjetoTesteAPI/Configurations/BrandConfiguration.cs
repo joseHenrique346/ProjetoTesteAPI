@@ -12,20 +12,17 @@ namespace ProjetoTesteAPI.Configurations
 
             builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.Name)
-                .IsRequired()
-                .HasMaxLength(40)
-                .HasColumnName("nome");
+            builder.Property(x => x.Name).HasColumnName("nome");
+            builder.Property(x => x.Name).IsRequired();
+            builder.Property(x => x.Name).HasMaxLength(40);
 
-            builder.Property(x => x.Code)
-                .IsRequired()
-                .HasMaxLength(6)
-                .HasColumnName("codigo");
+            builder.Property(x => x.Code).HasColumnName("codigo");
+            builder.Property(x => x.Code).IsRequired();
+            builder.Property(x => x.Code).HasMaxLength(6);
 
-            builder.Property(x => x.Description)
-                .IsRequired()
-                .HasMaxLength(100)
-                .HasColumnName("descricao");
+            builder.Property(x => x.Description).HasColumnName("descricao");
+            builder.Property(x => x.Description).IsRequired();
+            builder.Property(x => x.Description).HasMaxLength(100);
         }
     }
 }

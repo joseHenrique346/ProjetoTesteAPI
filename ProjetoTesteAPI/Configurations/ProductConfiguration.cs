@@ -18,20 +18,21 @@ namespace ProjetoTesteAPI.Configurations
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
 
-            builder.Property(x => x.Name)
-                .HasMaxLength(40)
-                .HasColumnName("nome")
-                .IsRequired();
+            builder.Property(x => x.Name).HasColumnName("nome");
+            builder.Property(x => x.Name).HasMaxLength(40);
+            builder.Property(x => x.Name).IsRequired();
 
-            builder.Property(x => x.Code)
-                .HasMaxLength(6)
-                .HasColumnName("codigo")
-                .IsRequired();
+            builder.Property(x => x.Code).HasColumnName("codigo");
+            builder.Property(x => x.Code).HasMaxLength(6);
+            builder.Property(x => x.Code).IsRequired();
 
-            builder.Property(x => x.Description)
-                .HasMaxLength(100)
-                .HasColumnName("descricao")
-                .IsRequired();
+            builder.Property(x => x.Description).HasColumnName("descricao");
+            builder.Property(x => x.Description).HasMaxLength(100);
+            builder.Property(x => x.Description).IsRequired();
+
+            builder.Property(x => x.Stock).HasColumnName("estoque");
+            builder.Property(x => x.Stock).HasMaxLength(6);
+            builder.Property(x => x.Stock).IsRequired();
         }
     }
 }
