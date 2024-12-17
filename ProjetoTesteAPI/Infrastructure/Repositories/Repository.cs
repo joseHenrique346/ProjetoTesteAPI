@@ -13,7 +13,7 @@ namespace ProjetoTesteAPI.Infrastructure.Repositories
         public Repository(AppDbContext context)
         {
              _context = context;
-            _dbSet = context.Set<TEntity>();
+             _dbSet = context.GetDbSet<TEntity>();
         }
 
         public List<TEntity> GetAll()
