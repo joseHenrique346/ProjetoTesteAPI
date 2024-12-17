@@ -1,4 +1,6 @@
-﻿namespace ProjetoTesteAPI.Models
+﻿using System.Text.Json.Serialization;
+
+namespace ProjetoTesteAPI.Models
 {
     public class Client : BaseEntity
     {
@@ -7,6 +9,7 @@
         public string CPF { get; set; }
         public string Phone { get; set; }
 
+        [JsonIgnore]
         public ICollection<Order> Order { get; set; }
     }
 }

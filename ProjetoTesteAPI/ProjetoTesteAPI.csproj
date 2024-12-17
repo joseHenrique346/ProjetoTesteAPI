@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-    <Folder Include="Arguments\" />
+    <Folder Include="Controllers\Controllers\" />
+    <Folder Include="Controllers\Services\" />
   </ItemGroup>
 
 </Project>
