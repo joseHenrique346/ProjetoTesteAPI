@@ -6,6 +6,6 @@
         public DateTime CreatedDate { get; set; }
 
         public virtual Client Client { get; set; }
-        public virtual ICollection<ProductOrder> ProductOrders { get; set; }
+        public virtual List<ProductOrder> ProductOrders { get; set; }
     }
 }

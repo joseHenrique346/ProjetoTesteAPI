@@ -5,7 +5,7 @@ using ProjetoTesteAPI.Models;
 
 namespace ProjetoTesteAPI.Infrastructure.Repositories
 {
-    public abstract class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEntity, new()
+    public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEntity, new()
     {
         protected readonly AppDbContext _context;
         protected readonly DbSet<TEntity> _dbSet;

@@ -10,6 +10,6 @@ namespace ProjetoTesteAPI.Models
         public string Phone { get; set; }
 
         [JsonIgnore]
-        public ICollection<Order> Order { get; set; }
+        public List<Order>? Order { get; set; }
     }
 }
