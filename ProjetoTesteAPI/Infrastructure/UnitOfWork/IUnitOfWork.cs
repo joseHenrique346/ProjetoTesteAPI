@@ -1,4 +1,5 @@
-﻿using ProjetoTesteAPI.Infrastructure.Interfaces;
+﻿using ProjetoTesteAPI.Context;
+using ProjetoTesteAPI.Infrastructure.Interfaces;
 using ProjetoTesteAPI.Infrastructure.Repositories;
 using System;
 
@@ -12,5 +13,7 @@ namespace ProjetoTesteAPI.Infrastructure
         OrderRepository OrderRepository { get; }
         ProductRepository ProductRepository { get; }
         void Commit();
+        Task<int> CommitAsync();
+        AppDbContext DbContext { get; }
     }
 }

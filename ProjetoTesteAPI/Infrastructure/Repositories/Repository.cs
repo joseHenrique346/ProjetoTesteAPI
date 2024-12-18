@@ -21,9 +21,14 @@ namespace ProjetoTesteAPI.Infrastructure.Repositories
             return _dbSet.ToList();
         }
 
-        public TEntity? Get(long id)
+        public async Task<List<TEntity>> GetAllAsync()
         {
-            return _dbSet.Find(id);
+            return await _dbSet.ToListAsync();
+        }
+
+        public async Task<TEntity?> GetAsync(long id)
+        {
+            return await _dbSet.FindAsync(id);
         }
 
         public bool Update(TEntity entity)
@@ -32,15 +37,18 @@ namespace ProjetoTesteAPI.Infrastructure.Repositories
             return true;
         }
 
-        public TEntity Create(TEntity entity)
+        public async Task<TEntity> CreateAsync(TEntity entity)
         {
-            _dbSet.Add(entity);
+            await _dbSet.AddAsync(entity);
             return entity;
         }
 
-        public bool Delete(long id)
+        public async Task<bool> DeleteAsync(long id)
         {
-            _dbSet.Remove(new TEntity { Id = id});
+            var entity = await _dbSet.FindAsync(id);
+            if (entity == null) return false;
+
+            _dbSet.Remove(entity);
             return true;
         }
     }

@@ -23,11 +23,18 @@ public class UnitOfWork : IUnitOfWork
     private ProductRepository _productRepository;
     public ProductRepository ProductRepository => _productRepository ??= new ProductRepository(_context);
 
+    public AppDbContext DbContext => _context;
+
     public void Commit()
     {
         _context.SaveChanges();
     }
     
+    public async Task<int> CommitAsync()
+    {
+        return await _context.SaveChangesAsync();
+    }
+
     public void Dispose()
     {
         _context.Dispose();
