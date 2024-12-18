@@ -9,7 +9,11 @@ namespace ProjetoTesteAPI.Models
         public string CPF { get; set; }
         public string Phone { get; set; }
 
+        public string Role { get; set; }
+
         [JsonIgnore]
         public List<Order>? Order { get; set; }
+
+        public string PasswordHash { get; set; }
     }
 }

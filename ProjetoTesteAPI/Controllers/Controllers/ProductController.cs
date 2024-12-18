@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProjetoTesteAPI.Arguments.Product;
 using ProjetoTesteAPI.Controllers.Services;
 using ProjetoTesteAPI.DTOs;
@@ -9,6 +10,7 @@ namespace ProjetoTesteAPI.Controllers.Controllers
 {
     [Route("produtos")]
     [ApiController]
+
     public class ProductController : ControllerBase
     {
         private readonly ProductService _productService;
@@ -19,6 +21,7 @@ namespace ProjetoTesteAPI.Controllers.Controllers
             _uof = uof;
         }
 
+        [Authorize]
         [HttpGet("Busca de Produtos")]
         public async Task<ActionResult<List<OutputProduct>>> GetAll()
         {
@@ -26,6 +29,7 @@ namespace ProjetoTesteAPI.Controllers.Controllers
             return Ok(result.ToListOutputProduct());
         }
 
+        [Authorize]
         [HttpGet("Busca de Produto por ID")]
         public async Task<ActionResult<OutputProduct>> Get(int id)
         {

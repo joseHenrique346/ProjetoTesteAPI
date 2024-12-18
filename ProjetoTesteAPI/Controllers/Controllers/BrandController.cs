@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProjetoTesteAPI.Arguments.Brand;
 using ProjetoTesteAPI.Controllers.Services;
 using ProjetoTesteAPI.DTOs;
@@ -20,6 +21,7 @@ namespace ProjetoTesteAPI.Controllers.Controllers
              _uof = uof;
         }
 
+        [Authorize]
         [HttpGet("Busca de Marcas")]
         public async Task<ActionResult<List<OutputBrand>>> GetAll()
         {
@@ -27,6 +29,7 @@ namespace ProjetoTesteAPI.Controllers.Controllers
             return Ok(brand.ToListOutputBrand());
         }
 
+        [Authorize]
         [HttpGet("Busca de Marca por ID")]
         public async Task<ActionResult<OutputBrand>> Get(int id)
         {

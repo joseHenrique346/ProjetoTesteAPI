@@ -1,8 +1,4 @@
 using ProjetoTesteAPI.Extensions;
-using ProjetoTesteAPI.Infrastructure;
-using ProjetoTesteAPI.Infrastructure.Interfaces;
-using ProjetoTesteAPI.Infrastructure.Repositories;
-using ProjetoTesteAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,16 +9,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.ConfigureSwagger();
 
+builder.Services.AddJWTAuthentication(builder.Configuration); 
+
 builder.Services.AddAuthorization();
-builder.Services.AddAuthentication("Bearer").AddJwtBearer();
 
 var app = builder.Build();
 
 app.ApplySwagger();
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
+app.UseAuthentication(); 
+app.UseAuthorization(); 
 
 app.MapControllers();
 

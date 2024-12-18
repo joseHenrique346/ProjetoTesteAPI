@@ -11,6 +11,7 @@ namespace ProjetoTesteAPI.Extensions
     {
         public static IServiceCollection ConfigureAddition(this IServiceCollection services)
         {
+            services.AddScoped<AuthService>();
             services.AddScoped<IRepository<Brand>, BrandRepository>();
             services.AddScoped<IRepository<Product>, ProductRepository>();
             services.AddScoped<IRepository<Client>, ClientRepository>();
