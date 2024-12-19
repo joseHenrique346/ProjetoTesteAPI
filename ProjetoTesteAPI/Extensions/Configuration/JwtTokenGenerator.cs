@@ -4,28 +4,37 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Security.Claims;
+using ProjetoTesteAPI.Models;
 
-public static class JwtTokenGenerator
+public class JwtService
 {
-    public static string GenerateToken(string username, IConfiguration configuration)
-    {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+    private readonly IConfiguration _configuration;
 
-        var claims = new[]
+    public JwtService(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+
+    public string GenerateJwtToken(Client client)
+    {
+        var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, username),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.Name, client.Name),
+            new Claim(ClaimTypes.Email, client.Email),
             new Claim(ClaimTypes.Role, client.Role)
         };
 
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
         var token = new JwtSecurityToken(
-            issuer: configuration["Jwt:Issuer"],
-            audience: configuration["Jwt:Audience"],
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(double.Parse(configuration["Jwt:ExpireMinutes"])),
-            signingCredentials: credentials);
+            expires: DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["Jwt:ExpireMinutes"])),
+            signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
+

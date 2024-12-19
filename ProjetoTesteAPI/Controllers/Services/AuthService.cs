@@ -25,6 +25,18 @@ public class AuthService
         return VerifyPasswordHash(password, client.PasswordHash);
     }
 
+    public void UpdateClient(Client client)
+    {
+        _context.Clients.Update(client); 
+        _context.SaveChanges(); 
+    }
+
+    public Client? GetClientByEmail(string email)
+    {
+        return _context.Clients.SingleOrDefault(c => c.Email == email);
+    }
+
+
     private bool VerifyPasswordHash(string password, string storedHash)
     {
         var hashBytes = Convert.FromBase64String(storedHash);
@@ -42,7 +54,7 @@ public class AuthService
         var salt = new byte[16];
         using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider())
         {
-            rng.GetBytes(salt); 
+            rng.GetBytes(salt);
         }
 
         var passwordHash = Convert.ToBase64String(KeyDerivation.Pbkdf2(
@@ -50,7 +62,7 @@ public class AuthService
             salt: salt,
             prf: KeyDerivationPrf.HMACSHA256,
             iterationCount: 10000,
-            numBytesRequested: 32)); 
+            numBytesRequested: 32));
 
         var client = new Client
         {
@@ -58,10 +70,13 @@ public class AuthService
             Email = email,
             CPF = cpf,
             Phone = phone,
-            PasswordHash = Convert.ToBase64String(salt.Concat(Convert.FromBase64String(passwordHash)).ToArray()) 
+            PasswordHash = Convert.ToBase64String(salt.Concat(Convert.FromBase64String(passwordHash)).ToArray()),
+            Role = "client"
         };
+
 
         _context.Clients.Add(client);
         _context.SaveChanges();
     }
+
 }
