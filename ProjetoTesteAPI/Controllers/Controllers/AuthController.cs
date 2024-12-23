@@ -1,57 +1,102 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using ProjetoTesteAPI.Context;
 using ProjetoTesteAPI.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace ProjetoTesteAPI.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly AuthService _authService;
-        private readonly JwtService _jwtService;   
+        private readonly AppDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(AuthService authService, JwtService jwtService)
+        public AuthController(AppDbContext context, IConfiguration configuration)
         {
-            _authService = authService;
-            _jwtService = jwtService;
+            _context = context;
+            _configuration = configuration;
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginModel login)
+        public async Task<ActionResult> Login([FromBody] LoginRequest request)
         {
-            if (!_authService.IsValidClient(login.Email, login.Password))
-                return Unauthorized(new { Message = "Credenciais inválidas." });
+            var client = await _context.Clients
+                .FirstOrDefaultAsync(c => c.Email == request.Email);
 
-            var client = _authService.GetClientByEmail(login.Email);
-            if (client == null)
-                return Unauthorized(new { Message = "Cliente não encontrado." });
+            if (client == null || !BCrypt.Net.BCrypt.Verify(request.Password, client.PasswordHash))
+            {
+                return Unauthorized("Credenciais inválidas.");
+            }
 
-            var token = _jwtService.GenerateJwtToken(client);
-            return Ok(new { Token = token });
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+            new Claim(ClaimTypes.Name, client.Email),
+            new Claim(ClaimTypes.Role, client.Role)
+                }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                Issuer = _configuration["Jwt:Issuer"],
+                Audience = _configuration["Jwt:Audience"],
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+
+            return Ok(new { Token = tokenString });
         }
 
-
-        [HttpPost("register")]
-        public IActionResult Register([FromBody] RegisterModel register)
+    [HttpPost("register")]
+        public async Task<ActionResult> Register([FromBody] RegisterRequest request)
         {
-            _authService.RegisterClient(register.Name, register.Email, register.Password, register.CPF, register.Phone);
-            return Ok(new { Message = "Cliente registrado com sucesso!" });
+            var existingClient = await _context.Clients
+                .FirstOrDefaultAsync(c => c.Email == request.Email);
+
+            if (existingClient != null)
+            {
+                return BadRequest("Este e-mail já está em uso.");
+            }
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
+
+            var client = new Client
+            {
+                Name = request.Name,
+                Email = request.Email,
+                CPF = request.CPF,
+                Phone = request.Phone,
+                Role = "Client",
+                PasswordHash = hashedPassword
+            };
+
+            _context.Clients.Add(client);
+            await _context.SaveChangesAsync();
+
+            return Ok("Cliente registrado com sucesso.");
         }
 
-        [HttpPut("assign-role")]
-        [Authorize(Roles = "admin")]
-        public IActionResult AssignRole([FromBody] AssignRoleModel model)
+        public class RegisterRequest
         {
-            var client = _authService.GetClientByEmail(model.Email);
-            if (client == null)
-                return NotFound(new { Message = "Cliente não encontrado." });
-
-            client.Role = model.Role;
-            _authService.UpdateClient(client);
-
-            return Ok(new { Message = "Role atribuída com sucesso!" });
+            public string Name { get; set; }
+            public string Email { get; set; }
+            public string Password { get; set; }
+            public string CPF { get; set; }
+            public string Phone { get; set; }
         }
 
+        public class LoginRequest
+        {
+            public string Email { get; set; }
+            public string Password { get; set; }
+        }
     }
 }

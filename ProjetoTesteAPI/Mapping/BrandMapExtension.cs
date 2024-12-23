@@ -7,7 +7,12 @@ namespace ProjetoTesteAPI.DTOs
     {
         public static OutputBrand ToOutputBrand(this Brand brand)
         {
-            return new OutputBrand(brand.Id, brand.Name, brand.Code, brand.Description);           
+            return new OutputBrand(
+                brand.Id,  
+                brand.Name,
+                brand.Code,
+                brand.Description
+            );
         }
 
         public static Brand ToBrand(this InputCreateBrand input)
@@ -32,7 +37,13 @@ namespace ProjetoTesteAPI.DTOs
         
         public static List<OutputBrand> ToListOutputBrand(this List<Brand> brand)
         {
-            return brand.Select(x => new OutputBrand(x.Id, x.Name, x.Code, x.Description)).ToList();
+            return brand.Select(x => new OutputBrand(
+              
+                x.Id, 
+                x.Name, 
+                x.Code, 
+                x.Description
+                )).ToList();
         }
     }
 }

@@ -4,13 +4,14 @@ using ProjetoTesteAPI.Arguments.Product;
 using ProjetoTesteAPI.Controllers.Services;
 using ProjetoTesteAPI.DTOs;
 using ProjetoTesteAPI.Infrastructure;
+using ProjetoTesteAPI.Infrastructure.Repositories;
 using ProjetoTesteAPI.Models;
 
 namespace ProjetoTesteAPI.Controllers.Controllers
 {
     [Route("produtos")]
     [ApiController]
-
+    [Authorize(Roles = "Admin")]
     public class ProductController : ControllerBase
     {
         private readonly ProductService _productService;
@@ -30,21 +31,24 @@ namespace ProjetoTesteAPI.Controllers.Controllers
         }
 
         [Authorize]
-        [HttpGet("Busca de Produto por ID")]
-        public async Task<ActionResult<OutputProduct>> Get(int id)
+        [HttpGet("Busca Por Id")]
+        public async Task<ActionResult<Product>> GetId(long id)
         {
-            var result = await _productService.GetProductAsync(id);
-            if (result is string errorMessage)
+            var product = await _productService.GetProductAsync(id);  
+
+            if (product == null)
             {
-                return BadRequest(errorMessage);
+                return NotFound();
             }
-            
-            if (result != null)
-            {
-                return NotFound(result);
-            } 
-            return Ok(result);
+
+            return Ok(product.ToOutputProduct());
         }
+
+        //[HttpGet]
+        //public async Task<Product?> GetProductWithBrandAsync(long id)
+        //{
+        //    return await _uof.ProductRepository.GetWithIncludesAsync(id, p => p.Brand);
+        //}
 
         [HttpPost("Criação de Produto")]
         public async Task<ActionResult<OutputProduct>> Create(InputCreateProduct input)
@@ -63,8 +67,8 @@ namespace ProjetoTesteAPI.Controllers.Controllers
         [HttpDelete("Removendo Produto")]
         public async Task<ActionResult<bool>> Delete(int id)
         {
-            var result = _productService.DeleteProductAsync(id);
-            return true;
+            var result = await _productService.DeleteProductAsync(id);
+            return Ok(result);
         }
     }
 }

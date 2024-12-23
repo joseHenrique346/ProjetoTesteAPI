@@ -6,13 +6,15 @@ using ProjetoTesteAPI.Models;
 namespace ProjetoTesteAPI.Extensions
 {
     using Microsoft.Extensions.DependencyInjection;
+    using ProjetoTesteAPI.Controllers.Services;
 
     public static class AdditionExtension
     {
         public static IServiceCollection ConfigureAddition(this IServiceCollection services)
         {
-            services.AddSingleton<JwtService>();
-            services.AddScoped<AuthService>();
+            services.AddScoped<BrandService>();
+            services.AddScoped<ClientService>();
+            services.AddScoped<ProductService>();
             services.AddScoped<IRepository<Brand>, BrandRepository>();
             services.AddScoped<IRepository<Product>, ProductRepository>();
             services.AddScoped<IRepository<Client>, ClientRepository>();

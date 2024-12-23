@@ -10,6 +10,7 @@ namespace ProjetoTesteAPI.Controllers.Controllers
 {
     [Route("marca")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class BrandController : ControllerBase
     {
         private readonly BrandService _brandService;
@@ -51,7 +52,7 @@ namespace ProjetoTesteAPI.Controllers.Controllers
         public async Task<ActionResult<OutputBrand>> CreateAsync(InputCreateBrand input)
         {
             var brand = await _brandService.CreateBrandAsync(input);
-            return CreatedAtAction(nameof(CreateAsync), new { id = brand.Id }, brand.ToOutputBrand());
+            return CreatedAtAction(nameof(Get), new { id = brand.Id }, brand.ToOutputBrand());
         }
 
         [HttpPut("Atualização de Marca")]
@@ -62,9 +63,9 @@ namespace ProjetoTesteAPI.Controllers.Controllers
         }
 
         [HttpDelete("Removendo Marca")]
-        public ActionResult<bool> Delete(int id)
+        public async Task<ActionResult<bool>> Delete(int id)
         {
-            var result = _brandService.DeleteBrandAsync(id);
+            var result = await _brandService.DeleteBrandAsync(id);
             return Ok(result);
         }
     }

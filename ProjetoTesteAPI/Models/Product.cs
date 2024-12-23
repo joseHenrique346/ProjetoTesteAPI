@@ -1,18 +1,20 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ProjetoTesteAPI.Models
 {
-    [Table("Products")]
+    [Table("produtos")]
     public class Product : BaseEntity
     {
         public string Name { get; set; }
         public string Code { get; set; }
         public string Description { get; set; }
-        public long BrandId { get; set; }
+        public long? BrandId { get; set; }
         public decimal Price { get; set; }
         public long Stock { get; set; }
 
-        public virtual Brand Brand { get; set; }
+        [JsonIgnore]
+        public virtual Brand? Brand { get; set; }
     }
 }

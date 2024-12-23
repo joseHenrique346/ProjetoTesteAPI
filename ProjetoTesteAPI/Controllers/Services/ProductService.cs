@@ -14,9 +14,9 @@ namespace ProjetoTesteAPI.Controllers.Services
              _uof = uof;
         }
 
-        public async Task<string?> ValidateGetProductAsync(int id)
+        public async Task<string?> ValidateGetProductAsync(long id)
         {
-            var existingProduct = (await _uof.ProductRepository.GetAsync(id));
+            var existingProduct = await _uof.ProductRepository.GetWithIncludesAsync(id, p => p.Brand);
             if (existingProduct is null)
             {
                 return "*ERRO* Tem certeza que digitou o ID certo?";
@@ -25,7 +25,7 @@ namespace ProjetoTesteAPI.Controllers.Services
             return null;              
         }
 
-        public async Task<object> GetProductAsync(int id)
+        public async Task<Product?> GetProductAsync(long id)
         {
             var validationMessage = await ValidateGetProductAsync(id);
             if (validationMessage != null)
@@ -33,7 +33,7 @@ namespace ProjetoTesteAPI.Controllers.Services
                 throw new Exception(validationMessage);
             }
 
-            var product = _uof.ProductRepository.GetAsync(id);
+            var product = await _uof.ProductRepository.GetWithIncludesAsync(id, p => p.Brand);
             return product;
         }
 
@@ -67,13 +67,36 @@ namespace ProjetoTesteAPI.Controllers.Services
                 return "O preço não pode ser menor que zero.";
             }
 
-            if (input.BrandId <= 0)
+            if (input.BrandId.HasValue && input.BrandId.Value <= 0)
             {
-                return "Informe um valor válido para o Id";
+                return "Informe um valor válido para o Id da marca.";
             }
 
-            return null;
+            if (input.BrandId.HasValue)
+            {
+                var brandExists = await _uof.BrandRepository.GetAsync(input.BrandId.Value); 
+
+                if (brandExists == null)
+                {
+                    var newBrand = new Brand
+                    {
+                        Id = input.BrandId.Value, 
+                        Name = "Marca Padrão"
+                    };
+
+                    await _uof.BrandRepository.CreateAsync(newBrand);
+                    await _uof.CommitAsync(); 
+                }
+            }
+            else
+            {
+                return "O ID da marca não pode ser nulo.";
+            }
+
+            return null; 
         }
+
+
 
         public async Task<Product> CreateProductAsync(InputCreateProduct input)
         {
@@ -83,36 +106,40 @@ namespace ProjetoTesteAPI.Controllers.Services
                 throw new Exception(validationMessage);
             }
 
-            
             var product = await _uof.ProductRepository.CreateAsync(input.ToProduct());
             await _uof.CommitAsync();
             return product;
         }
 
-        public string ValidateUpdateProduct(int id, InputUpdateProduct input)
+        public string? ValidateUpdateProduct(long id, InputUpdateProduct input)
         {
-            var allProducts = _uof.ProductRepository.GetAll();
-            var currentProduct = _uof.ProductRepository.GetAsync(id);
+            var allProducts = _uof.ProductRepository.GetAll();  
+
+            var currentProduct = _uof.ProductRepository.Get(id);  
+
+            if (currentProduct == null)
+            {
+                return "Produto não encontrado.";
+            }
 
             var existingNameProduct = allProducts
-                                    .FirstOrDefault(x =>
-                                    x.Name.Equals(input.Name,
-                                    StringComparison.OrdinalIgnoreCase) &&
-                                    x.Id != currentProduct.Id);
+                .FirstOrDefault(x =>
+                    x.Name.Equals(input.Name, StringComparison.OrdinalIgnoreCase) &&
+                    x.Id != currentProduct.Id);
 
             if (existingNameProduct != null)
             {
-                return "Já existe uma marca com este nome.";
+                return "Já existe um produto com este nome.";
             }
 
             var existingCodeProduct = allProducts
-                                     .FirstOrDefault(x =>
-                                     x.Code.Equals(input.Code) &&
-                                     x.Id != currentProduct.Id);
+                .FirstOrDefault(x =>
+                    x.Code.Equals(input.Code) &&
+                    x.Id != currentProduct.Id);
 
             if (existingCodeProduct != null)
             {
-                return "Já existe uma marca com este código.";
+                return "Já existe um produto com este código.";
             }
 
             if (string.IsNullOrEmpty(input.Description))
@@ -123,31 +150,39 @@ namespace ProjetoTesteAPI.Controllers.Services
             return null;
         }
 
-        public Product UpdateProduct(int id, InputUpdateProduct input)
+        public Product UpdateProduct(long id, InputUpdateProduct input)
         {
-            var validationMessage = ValidateUpdateProduct(id, input);
-
-            if (validationMessage is string)
+            var validationMessage = ValidateUpdateProduct(id, input); 
+            if (validationMessage != null)
             {
                 throw new Exception(validationMessage);
             }
 
-            var newProduct = new Product
+            var existingProduct = _uof.ProductRepository.Get(id);  
+
+            if (existingProduct == null)
             {
-                Name = input.Name,
-                Code = input.Code,
-                Description = input.Description
-            };
+                throw new Exception("Produto não encontrado.");
+            }
 
-            _uof.ProductRepository.Update(newProduct);
-            _uof.Commit();
-            return newProduct;
-        } 
+            existingProduct.Name = input.Name;
+            existingProduct.Code = input.Code;
+            existingProduct.Description = input.Description;
+            existingProduct.Price = input.Price;
+            existingProduct.Stock = input.Stock;
+            existingProduct.BrandId = input.BrandId;
 
-        public async Task<string?> ValidateDeleteProductAsync(int id)
+            _uof.ProductRepository.Update(existingProduct);
+            _uof.Commit();  
+
+            return existingProduct;
+        }
+
+        public async Task<string?> ValidateDeleteProductAsync(long id)
         {
-            var existingProduct = (await _uof.ProductRepository.GetAllAsync())
-                                  .FirstOrDefault(x => x.Id.Equals(id));
+            var products = await _uof.ProductRepository.GetAllAsync(); 
+            var existingProduct = products.FirstOrDefault(x => x.Id == id);
+
             if (existingProduct is null)
             {
                 return "Não foi encontrado o ID inserido, foi informado corretamente?";
@@ -156,16 +191,16 @@ namespace ProjetoTesteAPI.Controllers.Services
             return null;
         }
 
-        public async Task <bool> DeleteProductAsync(int id)
+        public async Task<bool> DeleteProductAsync(long id)
         {
             var validationMessage = await ValidateDeleteProductAsync(id);
             if (validationMessage is string)
             {
-                throw new Exception(validationMessage);
+            throw new Exception(validationMessage);
             }
 
-            await _uof.ProductRepository.DeleteAsync(id);
-            await _uof.CommitAsync();
+            await _uof.ProductRepository.DeleteAsync(id);  
+            await _uof.CommitAsync();  
             return true;
         }
     }

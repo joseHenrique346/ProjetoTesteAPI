@@ -14,7 +14,7 @@ namespace ProjetoTesteAPI.Controllers.Services
              _uof = uof;
         }
 
-        public async Task<string?> ValidateGetBrandAsync(int id)
+        public async Task<string?> ValidateGetBrandAsync(long id)
         {
             var existingId = (await _uof.BrandRepository.GetAsync(id));
             if (existingId is null)
@@ -25,7 +25,7 @@ namespace ProjetoTesteAPI.Controllers.Services
             return null;
         }
 
-        public async Task<object> GetBrandAsync(int id)
+        public async Task<object> GetBrandAsync(long id)
         {
             var validationMessage = await ValidateGetBrandAsync(id);
             if (validationMessage != null)
@@ -85,9 +85,9 @@ namespace ProjetoTesteAPI.Controllers.Services
             return brand;
         }
 
-        public string? ValidateUpdateBrand(int id, InputUpdateBrand input)
+        public string? ValidateUpdateBrand(long id, InputUpdateBrand input)
         {
-            var currentBrand = _uof.BrandRepository.GetAsync(id);
+            var currentBrand = _uof.BrandRepository.Get(id);
 
             if (currentBrand == null)
             {
@@ -122,30 +122,50 @@ namespace ProjetoTesteAPI.Controllers.Services
             return null;
         }
 
-
-
         public Brand UpdateBrand(int id, InputUpdateBrand input)
         {
             var validationMessage = ValidateUpdateBrand(id, input);
+            var currentBrand = _uof.BrandRepository.Get(id);
+
             if (validationMessage is string)
             {
                 throw new Exception(validationMessage);
             }
 
-            var newBrand = new Brand
-            {
-                Name = input.Name,
-                Code = input.Code,
-                Description = input.Description
-            };
+            currentBrand.Name = input.Name;
+            currentBrand.Code = input.Code;
+            currentBrand.Description = input.Description;
 
-            _uof.BrandRepository.Update(newBrand);
-            _uof.CommitAsync();
+            _uof.BrandRepository.Update(currentBrand);
+            _uof.Commit();
 
-            return newBrand;
+            return currentBrand;
         }
 
-        public async Task<string?> ValidateDeleteBrandAsync(int id)
+        private async Task<Brand> GetOrCreateGenericBrandAsync()
+        {
+            const string genericBrandCode = "GEN"; 
+            var genericBrand = (await _uof.BrandRepository.GetAllAsync())
+                               .FirstOrDefault(b => b.Code == genericBrandCode);
+
+            if (genericBrand == null)
+            {
+                genericBrand = new Brand
+                {
+                    Name = "Marca Genérica",
+                    Description = "Esta é a marca atribuída automaticamente para produtos sem marca específica.",
+                    Code = genericBrandCode
+                };
+
+                await _uof.BrandRepository.CreateAsync(genericBrand);
+                await _uof.CommitAsync(); 
+            }
+
+            return genericBrand;
+        }
+
+
+        public async Task<string?> ValidateDeleteBrandAsync(long id)
         {
             var existingBrand = (await _uof.BrandRepository.GetAllAsync())
                                 .FirstOrDefault(x => x.Id == id);
@@ -158,7 +178,7 @@ namespace ProjetoTesteAPI.Controllers.Services
             return null;
         }
 
-        public async Task<bool> DeleteBrandAsync(int id)
+        public async Task<bool> DeleteBrandAsync(long id)
         {
             var validationMessage = await ValidateDeleteBrandAsync(id);
             if (validationMessage is string)
@@ -166,8 +186,32 @@ namespace ProjetoTesteAPI.Controllers.Services
                 throw new Exception(validationMessage);
             }
 
+            var brand = await _uof.BrandRepository.GetAsync(id);
+            if (brand == null)
+            {
+                throw new Exception("Marca não encontrada.");
+            }
+
+            var genericBrand = await GetOrCreateGenericBrandAsync();
+            if (genericBrand == null)
+            {
+                throw new Exception("Marca genérica não encontrada.");
+            }
+
+            genericBrand = await GetOrCreateGenericBrandAsync(); 
+
+            var products = await _uof.ProductRepository.GetAllAsync();
+            var productsToUpdate = products.Where(p => p.BrandId == id).ToList();
+
+            foreach (var product in productsToUpdate)
+            {
+                product.BrandId = genericBrand.Id; 
+                _uof.ProductRepository.Update(product);
+            }
+
             await _uof.BrandRepository.DeleteAsync(id);
-            await _uof.CommitAsync();
+            await _uof.CommitAsync(); 
+
             return true;
         }
     }

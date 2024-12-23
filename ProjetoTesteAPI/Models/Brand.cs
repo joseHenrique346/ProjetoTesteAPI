@@ -1,15 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ProjetoTesteAPI.Models;
 using System.ComponentModel.DataAnnotations.Schema;
-
-namespace ProjetoTesteAPI.Models
+using System.Text.Json.Serialization;
+[Table("marcas")]
+public class Brand : BaseEntity
 {
-    [Table("Brands")]
-    public class Brand: BaseEntity
-    {
-        public string Name { get; set; }
-        public string Code { get; set; }
-        public string Description { get; set; }
+    public long Id { get; set; }  
+    public string Name { get; set; }
+    public string Code { get; set; }
+    public string Description { get; set; }
 
-        public virtual List<Product>? ListProduct { get; set; }
-    }
+    [JsonIgnore]
+    public virtual List<Product>? ListProduct { get; set; }
 }

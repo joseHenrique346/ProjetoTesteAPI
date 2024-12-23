@@ -2,13 +2,20 @@ using Microsoft.AspNetCore.Identity;
 using ProjetoTesteAPI.Context;
 using ProjetoTesteAPI.Extensions;
 using ProjetoTesteAPI.Models;
+using System.Text.Json.Serialization;
+using static ProjetoTesteAPI.Context.AppDbContext;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.ConfigureContext(builder.Configuration);
 builder.Services.ConfigureAddition();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.ConfigureSwagger();
 
@@ -18,13 +25,13 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+app.ApplySwagger();
+
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    InitializeAdminUser(dbContext);
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await UserSeed.SeedAdminUserAsync(context);
 }
-
-app.ApplySwagger();
 
 app.UseHttpsRedirection();
 app.UseAuthentication(); 
@@ -33,23 +40,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-void InitializeAdminUser(AppDbContext dbContext)
-{
-    if (!dbContext.Set<Client>().Any(c => c.Role == "admin"))
-    {
-        var passwordHasher = new PasswordHasher<Client>();
-        var admin = new Client
-        {
-            Name = "admin",
-            Email = "admin@admin.com",
-            CPF = "000.000.000-00",
-            Phone = "000000000",
-            Role = "admin",
-            PasswordHash = passwordHasher.HashPassword(null, "admin") 
-        };
-
-        dbContext.Set<Client>().Add(admin);
-        dbContext.SaveChanges();
-    }
-}

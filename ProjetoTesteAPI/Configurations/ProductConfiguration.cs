@@ -12,11 +12,11 @@ namespace ProjetoTesteAPI.Configurations
 
             builder.HasKey(x => x.Id);
 
-            builder.HasOne(x => x.Brand)
-                .WithMany(z => z.ListProduct)
-                .HasForeignKey(p => p.BrandId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.NoAction);
+            builder.HasOne(x => x.Brand)  
+                .WithMany(z => z.ListProduct) 
+                .HasForeignKey(p => p.BrandId)  
+                .IsRequired(false)  
+                .OnDelete(DeleteBehavior.SetNull); 
 
             builder.Property(x => x.Name).HasColumnName("nome");
             builder.Property(x => x.Name).HasMaxLength(40);
