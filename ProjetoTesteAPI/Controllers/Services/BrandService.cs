@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjetoTesteAPI.Arguments.Brand;
 using ProjetoTesteAPI.DTOs;
+using ProjetoTesteAPI.Extensions;
 using ProjetoTesteAPI.Infrastructure;
 using ProjetoTesteAPI.Models;
 
@@ -77,7 +78,7 @@ namespace ProjetoTesteAPI.Controllers.Services
             var validationMessage = await ValidateCreateBrandAsync(input);
             if (validationMessage != null)
             {
-                throw new Exception(validationMessage);
+                throw new ValidationException(validationMessage);
             }
 
             var brand = await _uof.BrandRepository.CreateAsync(input.ToBrand());
@@ -129,7 +130,7 @@ namespace ProjetoTesteAPI.Controllers.Services
 
             if (validationMessage is string)
             {
-                throw new Exception(validationMessage);
+                throw new ValidationException(validationMessage);
             }
 
             currentBrand.Name = input.Name;
@@ -183,19 +184,19 @@ namespace ProjetoTesteAPI.Controllers.Services
             var validationMessage = await ValidateDeleteBrandAsync(id);
             if (validationMessage is string)
             {
-                throw new Exception(validationMessage);
+                throw new ValidationException(validationMessage);
             }
 
             var brand = await _uof.BrandRepository.GetAsync(id);
             if (brand == null)
             {
-                throw new Exception("Marca não encontrada.");
+                throw new ValidationException("Marca não encontrada.");
             }
 
             var genericBrand = await GetOrCreateGenericBrandAsync();
             if (genericBrand == null)
             {
-                throw new Exception("Marca genérica não encontrada.");
+                throw new ValidationException("Marca genérica não encontrada.");
             }
 
             genericBrand = await GetOrCreateGenericBrandAsync(); 

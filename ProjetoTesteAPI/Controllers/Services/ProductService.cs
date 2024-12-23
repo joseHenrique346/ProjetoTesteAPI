@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjetoTesteAPI.Arguments.Product;
 using ProjetoTesteAPI.DTOs;
+using ProjetoTesteAPI.Extensions;
 using ProjetoTesteAPI.Infrastructure;
 using ProjetoTesteAPI.Models;
 
@@ -30,7 +31,7 @@ namespace ProjetoTesteAPI.Controllers.Services
             var validationMessage = await ValidateGetProductAsync(id);
             if (validationMessage != null)
             {
-                throw new Exception(validationMessage);
+                throw new ValidationException(validationMessage);
             }
 
             var product = await _uof.ProductRepository.GetWithIncludesAsync(id, p => p.Brand);
@@ -103,7 +104,7 @@ namespace ProjetoTesteAPI.Controllers.Services
             var validationMessage = await ValidateCreateProductAsync(input);
             if (validationMessage != null)
             {
-                throw new Exception(validationMessage);
+                throw new ValidationException(validationMessage);
             }
 
             var product = await _uof.ProductRepository.CreateAsync(input.ToProduct());
@@ -120,16 +121,6 @@ namespace ProjetoTesteAPI.Controllers.Services
             if (currentProduct == null)
             {
                 return "Produto não encontrado.";
-            }
-
-            var existingNameProduct = allProducts
-                .FirstOrDefault(x =>
-                    x.Name.Equals(input.Name, StringComparison.OrdinalIgnoreCase) &&
-                    x.Id != currentProduct.Id);
-
-            if (existingNameProduct != null)
-            {
-                return "Já existe um produto com este nome.";
             }
 
             var existingCodeProduct = allProducts
@@ -155,14 +146,14 @@ namespace ProjetoTesteAPI.Controllers.Services
             var validationMessage = ValidateUpdateProduct(id, input); 
             if (validationMessage != null)
             {
-                throw new Exception(validationMessage);
+                throw new ValidationException(validationMessage);
             }
 
             var existingProduct = _uof.ProductRepository.Get(id);  
 
             if (existingProduct == null)
             {
-                throw new Exception("Produto não encontrado.");
+                throw new ValidationException("Produto não encontrado.");
             }
 
             existingProduct.Name = input.Name;
@@ -196,7 +187,7 @@ namespace ProjetoTesteAPI.Controllers.Services
             var validationMessage = await ValidateDeleteProductAsync(id);
             if (validationMessage is string)
             {
-            throw new Exception(validationMessage);
+            throw new ValidationException(validationMessage);
             }
 
             await _uof.ProductRepository.DeleteAsync(id);  
